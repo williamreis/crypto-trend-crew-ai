@@ -4,17 +4,16 @@ _ = load_dotenv()
 
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-# from crewai_tools import SerperDevTool, ScrapeWebsiteTool, FileWriterTool
-from tools.coingecko_tool import CoinGeckoTool
-from tools.cryptopanic_tool import CryptoPanicTool
-from tools.sqlite_tool import SQLiteTool
+from project.src.project.tools.coingecko_tool import CoinGeckoTool
+from project.src.project.tools.news_tool import NewsTool
+from project.src.project.tools.sqlite_tool import SQLiteTool
 
 # import agentops
 # agentops.init()
 
 # Instanciar as tools
 coingecko_tool = CoinGeckoTool()
-cryptopanic_tool = CryptoPanicTool()
+news_tool = NewsTool()
 sqlite_tool = SQLiteTool()
 
 
@@ -36,7 +35,7 @@ class CryptoTrendCrew():
     def agente_sentimento(self) -> Agent:
         return Agent(
             config=self.agents_config['agente_sentimento'],
-            tools=[cryptopanic_tool],
+            tools=[news_tool],
             verbose=True
         )
 
@@ -73,7 +72,6 @@ class CryptoTrendCrew():
     def identificar_moedas_em_evidencia(self) -> Task:
         return Task(
             config=self.tasks_config['identificar_moedas_em_evidencia'],
-            agent=self.agente_coingecko,
             verbose=True
         )
 
@@ -81,7 +79,6 @@ class CryptoTrendCrew():
     def analisar_sentimento_de_mercado(self) -> Task:
         return Task(
             config=self.tasks_config['analisar_sentimento_de_mercado'],
-            agent=self.agente_sentimento,
             verbose=True
         )
 
@@ -89,7 +86,6 @@ class CryptoTrendCrew():
     def armazenar_dados_em_sqlite(self) -> Task:
         return Task(
             config=self.tasks_config['armazenar_dados_em_sqlite'],
-            agent=self.agente_persistencia,
             verbose=True
         )
 
@@ -97,7 +93,6 @@ class CryptoTrendCrew():
     def detectar_tendencias_em_dados(self) -> Task:
         return Task(
             config=self.tasks_config['detectar_tendencias_em_dados'],
-            agent=self.agente_tendencias,
             verbose=True
         )
 
@@ -105,7 +100,6 @@ class CryptoTrendCrew():
     def comparar_dados_temporais(self) -> Task:
         return Task(
             config=self.tasks_config['comparar_dados_temporais'],
-            agent=self.agente_comparador,
             verbose=True
         )
 
@@ -113,7 +107,6 @@ class CryptoTrendCrew():
     def gerar_relatorio_geral(self) -> Task:
         return Task(
             config=self.tasks_config['gerar_relatorio_geral'],
-            agent=self.agente_relatorios,
             verbose=True
         )
 

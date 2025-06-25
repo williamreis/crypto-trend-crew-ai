@@ -1,4 +1,4 @@
-.env
+project/.env
 __pycache__/
 .DS_Store
 

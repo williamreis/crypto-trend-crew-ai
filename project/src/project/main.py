@@ -4,9 +4,10 @@ import warnings
 
 from datetime import datetime
 
-from project.crew import Project
+from crew import Project
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
+
 
 # This main file is intended to be a way for you to run your
 # crew locally, so refrain from adding unnecessary logic into this file.
@@ -21,7 +22,7 @@ def run():
         'topic': 'AI LLMs',
         'current_year': str(datetime.now().year)
     }
-    
+
     try:
         Project().crew().kickoff(inputs=inputs)
     except Exception as e:
@@ -42,6 +43,7 @@ def train():
     except Exception as e:
         raise Exception(f"An error occurred while training the crew: {e}")
 
+
 def replay():
     """
     Replay the crew execution from a specific task.
@@ -52,6 +54,7 @@ def replay():
     except Exception as e:
         raise Exception(f"An error occurred while replaying the crew: {e}")
 
+
 def test():
     """
     Test the crew execution and returns the results.
@@ -60,9 +63,13 @@ def test():
         "topic": "AI LLMs",
         "current_year": str(datetime.now().year)
     }
-    
+
     try:
         Project().crew().test(n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=inputs)
 
     except Exception as e:
         raise Exception(f"An error occurred while testing the crew: {e}")
+
+
+if __name__ == "__main__":
+    run()

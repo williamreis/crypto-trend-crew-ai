@@ -1,18 +1,19 @@
-from crewai_tools import BaseTool
+from crewai.tools import BaseTool
 import sqlite3
 import os
 
 class SQLiteTool(BaseTool):
-    name = "SQLite Tool"
-    description = "Persiste e consulta dados em um banco SQLite local."
+    name: str = "SQLite Tool"
+    description: str = "Persiste e consulta dados em um banco SQLite local."
 
     def __init__(self, db_path=None):
         super().__init__()
-        self.db_path = db_path or os.path.join(os.path.dirname(__file__), '../../../data/crypto_trend.db')
+        # Definir o caminho do banco como atributo da classe
+        self._db_path = db_path or os.path.join(os.path.dirname(__file__), '../../../data/crypto_trend.db')
         self._ensure_tables()
 
     def _ensure_tables(self):
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self._db_path)
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS moedas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +34,7 @@ class SQLiteTool(BaseTool):
 
     def _run(self, query: str, params: dict = None) -> str:
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = sqlite3.connect(self._db_path)
             c = conn.cursor()
             if query.lower().startswith('select'):
                 c.execute(query, params or {})
@@ -46,4 +47,4 @@ class SQLiteTool(BaseTool):
                 conn.close()
                 return "Operação realizada com sucesso."
         except Exception as e:
-            return f"Erro no SQLite: {e}" 
+            return f"Erro no SQLite: {e}"

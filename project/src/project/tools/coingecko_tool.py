@@ -1,9 +1,10 @@
-from crewai_tools import BaseTool
+from crewai.tools import BaseTool
 import requests
 
+
 class CoinGeckoTool(BaseTool):
-    name = "CoinGecko Tool"
-    description = "Busca as 50 criptomoedas mais relevantes nas últimas 24h usando a API da CoinGecko."
+    name: str = "CoinGecko Tool"
+    description: str = "Busca as 50 criptomoedas mais relevantes nas últimas 24h usando a API da CoinGecko."
 
     def _run(self, query: str = None) -> str:
         try:
@@ -20,4 +21,4 @@ class CoinGeckoTool(BaseTool):
             moedas = [f"{coin['symbol'].upper()} - {coin['name']} (${coin['current_price']})" for coin in data]
             return "Top 50 moedas nas últimas 24h:\n" + "\n".join(moedas)
         except Exception as e:
-            return f"Erro ao consultar CoinGecko: {e}" 
+            return f"Erro ao consultar CoinGecko: {e}"

@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+
 _ = load_dotenv()
 
 from crewai import Agent, Crew, Process, Task
@@ -19,7 +20,6 @@ sqlite_tool = SQLiteTool()
 
 @CrewBase
 class CryptoTrendCrew():
-
     # Carregar configurações de agentes e tarefas
     agents_config = "config/agents.yaml"
     tasks_config = "config/tasks.yaml"
@@ -39,6 +39,7 @@ class CryptoTrendCrew():
             tools=[cryptopanic_tool],
             verbose=True
         )
+
     @agent
     def agente_persistencia(self) -> Agent:
         return Agent(

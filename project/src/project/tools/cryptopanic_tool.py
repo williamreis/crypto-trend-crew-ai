@@ -1,9 +1,10 @@
-from crewai_tools import BaseTool
+from crewai.tools import BaseTool
 import requests
 
+
 class CryptoPanicTool(BaseTool):
-    name = "CryptoPanic Tool"
-    description = "Busca e resume notícias relevantes de criptomoedas usando a API do CryptoPanic."
+    name: str = "CryptoPanic Tool"
+    description: str = "Busca e resume notícias relevantes de criptomoedas usando a API do CryptoPanic."
 
     def _run(self, query: str) -> str:
         try:
@@ -23,4 +24,4 @@ class CryptoPanicTool(BaseTool):
             noticias = [f"- {item['title']} ({item['url']})" for item in data['results'][:5]]
             return f"Notícias recentes para {query}:\n" + "\n".join(noticias)
         except Exception as e:
-            return f"Erro ao consultar CryptoPanic: {e}" 
+            return f"Erro ao consultar CryptoPanic: {e}"

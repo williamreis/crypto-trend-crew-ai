@@ -501,12 +501,14 @@ source = { virtual = "." }
 dependencies = [
     { name = "crewai" },
     { name = "crewai-tools" },
+    { name = "requests" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "crewai", specifier = ">=0.130.0" },
     { name = "crewai-tools", specifier = ">=0.47.1" },
+    { name = "requests", specifier = ">=2.32.4" },
 ]
 
 [[package]]

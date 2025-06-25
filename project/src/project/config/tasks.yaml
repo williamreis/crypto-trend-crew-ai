@@ -1,27 +1,33 @@
 identificar_moedas_em_evidencia:
   description: >
     Consultar a API do CoinGecko para identificar as 50 criptomoedas mais relevantes nas últimas 24 horas, com base em volume de negociação e variação de preço.
+    IMPORTANTE: Após coletar os dados, use a SQLiteTool com ação "save_moedas" para salvar as moedas no banco SQLite.
   expected_output: >
     Lista contendo as 50 criptomoedas em destaque, incluindo: nome, símbolo, variação percentual nas últimas 24h, market cap e volume de negociação.
+    Confirmação de que os dados foram salvos no banco SQLite.
   agent: agente_coingecko
 
 analisar_sentimento_de_mercado:
   description: >
     Coletar notícias recentes do mercado cripto (últimas 24–48h) e realizar análise de sentimento com base no conteúdo coletado.
+    IMPORTANTE: Após analisar o sentimento, use a SQLiteTool com ação "save_sentimento" para salvar os resultados no banco SQLite.
   expected_output: >
     Classificação de sentimento geral do mercado (positivo, negativo ou neutro), com justificativa baseada nas principais fontes.
+    Confirmação de que os dados de sentimento foram salvos no banco SQLite.
   agent: agente_sentimento
 
 armazenar_dados_em_sqlite:
   description: >
-    Persistir os dados coletados e analisados (moedas em evidência e análise de sentimento) no banco de dados SQLite local para uso posterior.
+    Verificar se todos os dados coletados e analisados (moedas em evidência e análise de sentimento) foram persistidos corretamente no banco de dados SQLite local.
+    Use a SQLiteTool com ações "get_moedas" e "get_sentimentos" para consultar e validar os dados armazenados.
   expected_output: >
-    Confirmação de que os dados foram armazenados corretamente no banco, com estrutura organizada por data e categoria.
+    Relatório de validação confirmando que os dados foram armazenados corretamente no banco, com estrutura organizada por data e categoria.
   agent: agente_persistencia
 
 detectar_tendencias_em_dados:
   description: >
-    Com base nos dados atuais e históricos, identificar tendências de alta, baixa ou estabilidade nas principais criptomoedas identificadas.
+    Com base nos dados atuais e históricos armazenados no SQLite, identificar tendências de alta, baixa ou estabilidade nas principais criptomoedas identificadas.
+    Use a SQLiteTool com ação "get_moedas" para consultar os dados salvos e realizar a análise de tendências.
   expected_output: >
     Lista de criptomoedas com indicação de tendência detectada e justificativa baseada na variação percentual e volume.
   agent: agente_tendencias
@@ -29,13 +35,15 @@ detectar_tendencias_em_dados:
 comparar_dados_temporais:
   description: >
     Comparar os dados das 50 moedas em evidência do dia anterior com os dados atuais e validar as tendências detectadas. Identificar confirmações, reversões ou inconsistências.
+    Use a SQLiteTool com ação "query" para consultar dados históricos e realizar comparações.
   expected_output: >
     Lista das moedas com status comparativo (Confirma tendência, Reverte tendência, Inconsistente), com justificativas baseadas na variação de indicadores entre os dois dias.
   agent: agente_comparador
 
 gerar_relatorio_geral:
   description: >
-    Com base nas análises realizadas pelos agentes anteriores, elaborar um relatório executivo contendo panorama do mercado, tendências, sentimentos e recomendações gerais.
+    Com base nas análises realizadas pelos agentes anteriores e dados armazenados no SQLite, elaborar um relatório executivo contendo panorama do mercado, tendências, sentimentos e recomendações gerais.
+    Use a SQLiteTool com ações "get_moedas" e "get_sentimentos" para consultar todos os dados salvos e gerar insights consolidados.
   expected_output: >
     Relatório textual coeso e estruturado, contendo: introdução, moedas em evidência, sentimento de mercado, tendências e uma conclusão com insights e recomendações.
   agent: agente_relatorios

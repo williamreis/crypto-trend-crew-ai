@@ -1,29 +1,41 @@
 identificar_moedas_em_evidencia:
-  description: "Consultar a API do CoinGecko para identificar as 50 criptomoedas mais relevantes nas últimas 24 horas, com base em volume de negociação e variação de preço."
-  expected_output: "Lista contendo as 50 criptomoedas em destaque, incluindo: nome, símbolo, variação percentual nas últimas 24h, market cap e volume de negociação."
+  description: >
+    Consultar a API do CoinGecko para identificar as 50 criptomoedas mais relevantes nas últimas 24 horas, com base em volume de negociação e variação de preço.
+  expected_output: >
+    Lista contendo as 50 criptomoedas em destaque, incluindo: nome, símbolo, variação percentual nas últimas 24h, market cap e volume de negociação.
   agent: agente_coingecko
 
 analisar_sentimento_de_mercado:
-  description: "Coletar notícias recentes do mercado cripto (últimas 24–48h) e realizar análise de sentimento com base no conteúdo coletado."
-  expected_output: "Classificação de sentimento geral do mercado (positivo, negativo ou neutro), com justificativa baseada nas principais fontes."
+  description: >
+    Coletar notícias recentes do mercado cripto (últimas 24–48h) e realizar análise de sentimento com base no conteúdo coletado.
+  expected_output: >
+    Classificação de sentimento geral do mercado (positivo, negativo ou neutro), com justificativa baseada nas principais fontes.
   agent: agente_sentimento
 
 armazenar_dados_em_sqlite:
-  description: "Persistir os dados coletados e analisados (moedas em evidência e análise de sentimento) no banco de dados SQLite local para uso posterior."
-  expected_output: "Confirmação de que os dados foram armazenados corretamente no banco, com estrutura organizada por data e categoria."
+  description: >
+    Persistir os dados coletados e analisados (moedas em evidência e análise de sentimento) no banco de dados SQLite local para uso posterior.
+  expected_output: >
+    Confirmação de que os dados foram armazenados corretamente no banco, com estrutura organizada por data e categoria.
   agent: agente_persistencia
 
 detectar_tendencias_em_dados:
-  description: "Com base nos dados atuais e históricos, identificar tendências de alta, baixa ou estabilidade nas principais criptomoedas identificadas."
-  expected_output: "Lista de criptomoedas com indicação de tendência detectada e justificativa baseada na variação percentual e volume."
+  description: >
+    Com base nos dados atuais e históricos, identificar tendências de alta, baixa ou estabilidade nas principais criptomoedas identificadas.
+  expected_output: >
+    Lista de criptomoedas com indicação de tendência detectada e justificativa baseada na variação percentual e volume.
   agent: agente_tendencias
 
 comparar_dados_temporais:
-  description: "Comparar os dados das 50 moedas em evidência do dia anterior com os dados atuais e validar as tendências detectadas. Identificar confirmações, reversões ou inconsistências."
-  expected_output: "Lista das moedas com status comparativo (Confirma tendência, Reverte tendência, Inconsistente), com justificativas baseadas na variação de indicadores entre os dois dias."
+  description: >
+    Comparar os dados das 50 moedas em evidência do dia anterior com os dados atuais e validar as tendências detectadas. Identificar confirmações, reversões ou inconsistências.
+  expected_output: >
+    Lista das moedas com status comparativo (Confirma tendência, Reverte tendência, Inconsistente), com justificativas baseadas na variação de indicadores entre os dois dias.
   agent: agente_comparador
 
 gerar_relatorio_geral:
-  description: "Com base nas análises realizadas pelos agentes anteriores, elaborar um relatório executivo contendo panorama do mercado, tendências, sentimentos e recomendações gerais."
-  expected_output: "Relatório textual coeso e estruturado, contendo: introdução, moedas em evidência, sentimento de mercado, tendências e uma conclusão com insights e recomendações."
+  description: >
+    Com base nas análises realizadas pelos agentes anteriores, elaborar um relatório executivo contendo panorama do mercado, tendências, sentimentos e recomendações gerais.
+  expected_output: >
+    Relatório textual coeso e estruturado, contendo: introdução, moedas em evidência, sentimento de mercado, tendências e uma conclusão com insights e recomendações.
   agent: agente_relatorios

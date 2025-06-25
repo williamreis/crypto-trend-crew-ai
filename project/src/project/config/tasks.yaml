@@ -1,24 +1,29 @@
-analyst:
-  description: "Obtenha os dados atualizados de mercado das 5 principais criptomoedas por volume. Apresente preço, variação 24h e market cap."
-  expected_output: "Uma tabela com as moedas, seus preços atuais, variação em 24h e market cap."
-  agent: analyst
+identificar_moedas_em_evidencia:
+  description: "Consultar a API do CoinGecko para identificar as 50 criptomoedas mais relevantes nas últimas 24 horas, com base em volume de negociação e variação de preço."
+  expected_output: "Lista contendo as 50 criptomoedas em destaque, incluindo: nome, símbolo, variação percentual nas últimas 24h, market cap e volume de negociação."
+  agent: agente_coingecko
 
-news:
-  description: "Busque as 5 principais notícias das últimas 48 horas que impactaram o mercado de criptomoedas."
-  expected_output: "Lista com 5 notícias e um breve resumo de cada uma."
-  agent: news
+analisar_sentimento_de_mercado:
+  description: "Coletar notícias recentes do mercado cripto (últimas 24–48h) e realizar análise de sentimento com base no conteúdo coletado."
+  expected_output: "Classificação de sentimento geral do mercado (positivo, negativo ou neutro), com justificativa baseada nas principais fontes."
+  agent: agente_sentimento
 
-sentiment:
-  description: "Analise o sentimento geral do mercado cripto com base nas notícias e postagens recentes no Twitter e Reddit."
-  expected_output: "Classificação geral de sentimento (positivo, neutro, negativo) com justificativa."
-  agent: sentiment
+armazenar_dados_em_sqlite:
+  description: "Persistir os dados coletados e analisados (moedas em evidência e análise de sentimento) no banco de dados SQLite local para uso posterior."
+  expected_output: "Confirmação de que os dados foram armazenados corretamente no banco, com estrutura organizada por data e categoria."
+  agent: agente_persistencia
 
-technical:
-  description: "Aplique análise técnica (RSI, MACD, Bollinger Bands) para identificar se há sinais de compra/venda para Bitcoin e Ethereum."
-  expected_output: "Resumo técnico com os sinais identificados e qual interpretação predominante (compra, venda, neutro)."
-  agent: technical
+detectar_tendencias_em_dados:
+  description: "Com base nos dados atuais e históricos, identificar tendências de alta, baixa ou estabilidade nas principais criptomoedas identificadas."
+  expected_output: "Lista de criptomoedas com indicação de tendência detectada e justificativa baseada na variação percentual e volume."
+  agent: agente_tendencias
 
-report:
-  description: "Com base nas análises anteriores, gere um relatório executivo com visão geral do mercado, tendências, oportunidades e riscos."
-  expected_output: "Texto coeso com seções para dados de mercado, notícias, sentimento, análise técnica e conclusão."
-  agent: reporter
+comparar_dados_temporais:
+  description: "Comparar os dados das 50 moedas em evidência do dia anterior com os dados atuais e validar as tendências detectadas. Identificar confirmações, reversões ou inconsistências."
+  expected_output: "Lista das moedas com status comparativo (Confirma tendência, Reverte tendência, Inconsistente), com justificativas baseadas na variação de indicadores entre os dois dias."
+  agent: agente_comparador
+
+gerar_relatorio_geral:
+  description: "Com base nas análises realizadas pelos agentes anteriores, elaborar um relatório executivo contendo panorama do mercado, tendências, sentimentos e recomendações gerais."
+  expected_output: "Relatório textual coeso e estruturado, contendo: introdução, moedas em evidência, sentimento de mercado, tendências e uma conclusão com insights e recomendações."
+  agent: agente_relatorios

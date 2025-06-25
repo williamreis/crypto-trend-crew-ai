@@ -1,12 +1,19 @@
 [project]
 name = "crypto-trend-crew-ai"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "crewai>=0.130.0",
-    "crewai-tools>=0.47.1",
-    "requests>=2.32.4",
-    "streamlit>=1.46.0",
+description = "Sistema Multiagente de Análise de Tendência em Criptoativos com CrewAI"
+authors = [
+    {name = "William Reis", email = "wjsreis.dev@gmail.com"}
 ]
+dependencies = [
+    "crewai",
+    "requests",
+    "beautifulsoup4",
+    "streamlit",
+    "pyyaml",
+]
+requires-python = ">=3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

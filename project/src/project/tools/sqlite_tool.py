@@ -2,6 +2,7 @@ from crewai.tools import BaseTool
 import sqlite3
 import os
 from datetime import datetime
+import json
 
 class SQLiteTool(BaseTool):
     name: str = "SQLite Tool"
@@ -43,6 +44,8 @@ class SQLiteTool(BaseTool):
 
     def _run(self, action: str, data: str = None) -> str:
         try:
+            print(f"SQLiteTool: Executando ação '{action}' com dados: {data[:200] if data else 'None'}...")
+            
             if action.lower() == "save_moedas":
                 return self._save_moedas(data)
             elif action.lower() == "save_sentimento":
@@ -56,10 +59,16 @@ class SQLiteTool(BaseTool):
             else:
                 return f"Ação '{action}' não suportada. Use: save_moedas, save_sentimento, query, get_moedas, get_sentimentos"
         except Exception as e:
+            print(f"Erro no SQLiteTool: {e}")
             return f"Erro no SQLite: {e}"
 
     def _save_moedas(self, data_str: str) -> str:
         try:
+            if not data_str:
+                return "Nenhum dado fornecido para salvar moedas"
+            
+            print(f"Processando dados de moedas: {data_str[:500]}...")
+            
             # Parsear dados das moedas (formato: "BTC - Bitcoin ($45000)")
             lines = data_str.strip().split('\n')
             saved_count = 0
@@ -68,36 +77,52 @@ class SQLiteTool(BaseTool):
             c = conn.cursor()
             
             for line in lines:
+                line = line.strip()
+                if not line or line.startswith('Top 50') or line.startswith('#'):
+                    continue
+                    
+                print(f"Processando linha: {line}")
+                
                 if ' - ' in line and '$' in line:
                     # Extrair informações da linha
                     parts = line.split(' - ')
-                    symbol = parts[0].strip()
-                    name_price = parts[1].strip()
-                    
-                    # Extrair nome e preço
-                    if '(' in name_price and ')' in name_price:
-                        name = name_price.split('(')[0].strip()
-                        price_str = name_price.split('(')[1].split(')')[0].replace('$', '').replace(',', '')
-                        try:
-                            price = float(price_str)
-                        except:
-                            price = 0.0
+                    if len(parts) >= 2:
+                        symbol = parts[0].strip()
+                        name_price = parts[1].strip()
                         
-                        # Salvar no banco
-                        c.execute('''INSERT INTO moedas (symbol, name, price, date) 
-                                   VALUES (?, ?, ?, ?)''', 
-                                   (symbol, name, price, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-                        saved_count += 1
+                        # Extrair nome e preço
+                        if '(' in name_price and ')' in name_price:
+                            name = name_price.split('(')[0].strip()
+                            price_str = name_price.split('(')[1].split(')')[0].replace('$', '').replace(',', '')
+                            try:
+                                price = float(price_str)
+                                
+                                # Salvar no banco
+                                c.execute('''INSERT INTO moedas (symbol, name, price, date) 
+                                           VALUES (?, ?, ?, ?)''', 
+                                           (symbol, name, price, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                                saved_count += 1
+                                print(f"Salvou: {symbol} - {name} (${price})")
+                            except ValueError as ve:
+                                print(f"Erro ao converter preço '{price_str}' para {symbol}: {ve}")
+                                continue
             
             conn.commit()
             conn.close()
+            print(f"Total de moedas salvas: {saved_count}")
             return f"Salvas {saved_count} moedas no banco de dados."
             
         except Exception as e:
+            print(f"Erro ao salvar moedas: {e}")
             return f"Erro ao salvar moedas: {e}"
 
     def _save_sentimento(self, data_str: str) -> str:
         try:
+            if not data_str:
+                return "Nenhum dado fornecido para salvar sentimento"
+                
+            print(f"Processando dados de sentimento: {data_str[:500]}...")
+            
             # Parsear dados de sentimento (formato: "Notícias recentes sobre BTC: - título1 - título2")
             lines = data_str.strip().split('\n')
             symbol = "UNKNOWN"
@@ -105,7 +130,9 @@ class SQLiteTool(BaseTool):
             
             # Extrair símbolo da primeira linha
             if lines and 'sobre' in lines[0]:
-                symbol = lines[0].split('sobre')[1].split(':')[0].strip()
+                symbol_part = lines[0].split('sobre')
+                if len(symbol_part) > 1:
+                    symbol = symbol_part[1].split(':')[0].strip()
             
             # Contar notícias
             news_count = len([line for line in lines if line.strip().startswith('-')])
@@ -113,6 +140,8 @@ class SQLiteTool(BaseTool):
             # Calcular score simples baseado na quantidade de notícias
             score = min(news_count * 0.1, 1.0)  # Score de 0 a 1 baseado na quantidade de notícias
             sentiment = "positivo" if score > 0.5 else "neutro" if score > 0.2 else "negativo"
+            
+            print(f"Salvando sentimento para {symbol}: {sentiment} (score: {score:.2f}, {news_count} notícias)")
             
             conn = sqlite3.connect(self._db_path)
             c = conn.cursor()
@@ -125,6 +154,7 @@ class SQLiteTool(BaseTool):
             return f"Salvo sentimento para {symbol}: {sentiment} (score: {score:.2f}, {news_count} notícias)"
             
         except Exception as e:
+            print(f"Erro ao salvar sentimento: {e}")
             return f"Erro ao salvar sentimento: {e}"
 
     def _execute_query(self, query: str) -> str:

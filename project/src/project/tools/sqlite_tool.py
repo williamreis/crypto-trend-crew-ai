@@ -69,7 +69,17 @@ class SQLiteTool(BaseTool):
             
             print(f"Processando dados de moedas: {data_str[:500]}...")
             
-            # Parsear dados das moedas (formato: "BTC - Bitcoin ($45000)")
+            # Tentar processar como JSON primeiro
+            try:
+                if data_str.strip().startswith('[') and data_str.strip().endswith(']'):
+                    # É um array JSON
+                    data_json = json.loads(data_str)
+                    saved_count = self._save_moedas_from_json(data_json)
+                    return f"Salvas {saved_count} moedas no banco de dados (formato JSON)."
+            except json.JSONDecodeError:
+                print("Dados não são JSON válido, tentando processar como texto...")
+            
+            # Processar como texto (formato: "BTC - Bitcoin ($45000)")
             lines = data_str.strip().split('\n')
             saved_count = 0
             
@@ -115,6 +125,32 @@ class SQLiteTool(BaseTool):
         except Exception as e:
             print(f"Erro ao salvar moedas: {e}")
             return f"Erro ao salvar moedas: {e}"
+
+    def _save_moedas_from_json(self, data_json: list) -> int:
+        """Salva moedas a partir de dados JSON"""
+        saved_count = 0
+        conn = sqlite3.connect(self._db_path)
+        c = conn.cursor()
+        
+        for coin in data_json:
+            try:
+                symbol = coin.get('symbol', '').upper()
+                name = coin.get('name', '')
+                price = coin.get('current_price', 0.0)
+                
+                if symbol and name:
+                    c.execute('''INSERT INTO moedas (symbol, name, price, date) 
+                               VALUES (?, ?, ?, ?)''', 
+                               (symbol, name, price, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                    saved_count += 1
+                    print(f"Salvou JSON: {symbol} - {name} (${price})")
+            except Exception as e:
+                print(f"Erro ao salvar moeda JSON {coin}: {e}")
+                continue
+        
+        conn.commit()
+        conn.close()
+        return saved_count
 
     def _save_sentimento(self, data_str: str) -> str:
         try:

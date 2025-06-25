@@ -10,27 +10,33 @@ class SQLiteTool(BaseTool):
         super().__init__()
         # Definir o caminho do banco como atributo da classe
         self._db_path = db_path or os.path.join(os.path.dirname(__file__), '../../../data/crypto_trend.db')
+        # Criar diretório se não existir
+        os.makedirs(os.path.dirname(self._db_path), exist_ok=True)
         self._ensure_tables()
 
     def _ensure_tables(self):
-        conn = sqlite3.connect(self._db_path)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS moedas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            symbol TEXT,
-            name TEXT,
-            price REAL,
-            date TEXT
-        )''')
-        c.execute('''CREATE TABLE IF NOT EXISTS sentimento (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            symbol TEXT,
-            sentiment TEXT,
-            score REAL,
-            date TEXT
-        )''')
-        conn.commit()
-        conn.close()
+        try:
+            conn = sqlite3.connect(self._db_path)
+            c = conn.cursor()
+            c.execute('''CREATE TABLE IF NOT EXISTS moedas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                symbol TEXT,
+                name TEXT,
+                price REAL,
+                date TEXT
+            )''')
+            c.execute('''CREATE TABLE IF NOT EXISTS sentimento (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                symbol TEXT,
+                sentiment TEXT,
+                score REAL,
+                date TEXT
+            )''')
+            conn.commit()
+            conn.close()
+            print(f"Banco SQLite inicializado em: {self._db_path}")
+        except Exception as e:
+            print(f"Erro ao inicializar banco SQLite: {e}")
 
     def _run(self, query: str, params: dict = None) -> str:
         try:

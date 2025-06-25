@@ -1,0 +1,31 @@
+fetch_top_coins:
+  description: Buscar as 50 moedas em evidência nas últimas 24h.
+  expected_output: Lista das 50 moedas mais relevantes.
+  agent: coingecko_agent
+
+sentiment_analysis:
+  description: Realizar análise de sentimento das moedas identificadas.
+  expected_output: Sentimento agregado para cada moeda.
+  agent: sentiment_agent
+
+store_data: 
+  description: Armazenar dados coletados e analisados no banco SQLite.
+  expected_output: Dados persistidos no banco.
+  agent: storage_agent
+  depends_on:
+    - fetch_top_coins
+    - sentiment_analysis
+
+compare_trends:
+  description: Comparar dados atuais com os do dia anterior para detectar tendências.
+  expected_output: Lista de moedas em tendência de alta/baixa.
+  agent: trend_agent
+  depends_on:
+    - store_data
+
+generate_report:
+  description: Gerar panorama geral, conclusões e recomendações.
+  expected_output: Relatório consolidado.
+  agent: report_agent
+  depends_on:
+    - compare_trends

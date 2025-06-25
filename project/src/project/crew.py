@@ -27,7 +27,7 @@ class CryptoTrendCrew():
     def agente_coingecko(self) -> Agent:
         return Agent(
             config=self.agents_config['agente_coingecko'],
-            tools=[coingecko_tool],
+            tools=[coingecko_tool, sqlite_tool],
             verbose=True
         )
 
@@ -35,7 +35,7 @@ class CryptoTrendCrew():
     def agente_sentimento(self) -> Agent:
         return Agent(
             config=self.agents_config['agente_sentimento'],
-            tools=[news_tool],
+            tools=[news_tool, sqlite_tool],
             verbose=True
         )
 
@@ -51,6 +51,7 @@ class CryptoTrendCrew():
     def agente_tendencias(self) -> Agent:
         return Agent(
             config=self.agents_config['agente_tendencias'],
+            tools=[sqlite_tool],
             verbose=True
         )
 
@@ -58,6 +59,7 @@ class CryptoTrendCrew():
     def agente_comparador(self) -> Agent:
         return Agent(
             config=self.agents_config['agente_comparador'],
+            tools=[sqlite_tool],
             verbose=True
         )
 
@@ -65,6 +67,7 @@ class CryptoTrendCrew():
     def agente_relatorios(self) -> Agent:
         return Agent(
             config=self.agents_config['agente_relatorios'],
+            tools=[sqlite_tool],
             verbose=True
         )
 

@@ -123,23 +123,56 @@ class SQLiteTool(BaseTool):
         saved_count = 0
         conn = sqlite3.connect(self._db_path)
         c = conn.cursor()
-
+        
         for coin in data_json:
             try:
-                symbol = coin.get('symbol', '').upper()
-                name = coin.get('name', '')
-                price = coin.get('current_price', 0.0)
-
+                # Mapear campos dos dados recebidos para as colunas da tabela
+                symbol = coin.get('simbolo', coin.get('symbol', '')).upper()
+                name = coin.get('nome', coin.get('name', ''))
+                
+                # Tentar extrair preço de diferentes campos
+                price = 0.0
+                if 'market_cap' in coin and coin['market_cap'] != 'N/A':
+                    try:
+                        price_str = str(coin['market_cap']).replace('$', '').replace(',', '')
+                        price = float(price_str)
+                    except:
+                        price = 0.0
+                elif 'current_price' in coin:
+                    price = float(coin['current_price'])
+                
+                # Extrair variação percentual se disponível
+                change_24h = 0.0
+                if 'variacao_percentual_24h' in coin:
+                    try:
+                        change_str = str(coin['variacao_percentual_24h']).replace('%', '')
+                        change_24h = float(change_str)
+                    except:
+                        change_24h = 0.0
+                elif 'price_change_percentage_24h' in coin:
+                    change_24h = float(coin['price_change_percentage_24h'])
+                
+                # Extrair volume se disponível
+                volume = 0.0
+                if 'volume_negociacao' in coin and coin['volume_negociacao'] != 'N/A':
+                    try:
+                        volume_str = str(coin['volume_negociacao']).replace('$', '').replace(',', '')
+                        volume = float(volume_str)
+                    except:
+                        volume = 0.0
+                elif 'total_volume' in coin:
+                    volume = float(coin['total_volume'])
+                
                 if symbol and name:
-                    c.execute('''INSERT INTO moedas (symbol, name, price, date) 
-                               VALUES (?, ?, ?, ?)''',
-                              (symbol, name, price, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                    c.execute('''INSERT INTO moedas (symbol, name, price, volume, change_24h, date) 
+                               VALUES (?, ?, ?, ?, ?, ?)''', 
+                               (symbol, name, price, volume, change_24h, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
                     saved_count += 1
-                    print(f"Salvou JSON: {symbol} - {name} (${price})")
+                    print(f"Salvou JSON: {symbol} - {name} (${price}, {change_24h}%)")
             except Exception as e:
                 print(f"Erro ao salvar moeda JSON {coin}: {e}")
                 continue
-
+        
         conn.commit()
         conn.close()
         return saved_count

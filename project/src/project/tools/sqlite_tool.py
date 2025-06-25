@@ -3,6 +3,8 @@ import sqlite3
 import os
 from datetime import datetime
 import json
+import ast
+
 
 class SQLiteTool(BaseTool):
     name: str = "SQLite Tool"
@@ -45,7 +47,7 @@ class SQLiteTool(BaseTool):
     def _run(self, action: str, data: str = None) -> str:
         try:
             print(f"SQLiteTool: Executando ação '{action}' com dados: {data[:200] if data else 'None'}...")
-            
+
             if action.lower() == "save_moedas":
                 return self._save_moedas(data)
             elif action.lower() == "save_sentimento":
@@ -66,62 +68,52 @@ class SQLiteTool(BaseTool):
         try:
             if not data_str:
                 return "Nenhum dado fornecido para salvar moedas"
-            
             print(f"Processando dados de moedas: {data_str[:500]}...")
-            
-            # Tentar processar como JSON primeiro
+            # Tentar processar como JSON
+            data = None
             try:
-                if data_str.strip().startswith('[') and data_str.strip().endswith(']'):
-                    # É um array JSON
-                    data_json = json.loads(data_str)
-                    saved_count = self._save_moedas_from_json(data_json)
-                    return f"Salvas {saved_count} moedas no banco de dados (formato JSON)."
-            except json.JSONDecodeError:
-                print("Dados não são JSON válido, tentando processar como texto...")
-            
+                data = json.loads(data_str)
+            except Exception:
+                try:
+                    data = ast.literal_eval(data_str)
+                except Exception:
+                    data = None
+            if isinstance(data, dict) and 'coins' in data:
+                data = data['coins']
+            if isinstance(data, list):
+                return f"Salvas {self._save_moedas_from_json(data)} moedas no banco de dados (formato lista)."
             # Processar como texto (formato: "BTC - Bitcoin ($45000)")
             lines = data_str.strip().split('\n')
             saved_count = 0
-            
             conn = sqlite3.connect(self._db_path)
             c = conn.cursor()
-            
             for line in lines:
                 line = line.strip()
                 if not line or line.startswith('Top 50') or line.startswith('#'):
                     continue
-                    
                 print(f"Processando linha: {line}")
-                
                 if ' - ' in line and '$' in line:
-                    # Extrair informações da linha
                     parts = line.split(' - ')
                     if len(parts) >= 2:
                         symbol = parts[0].strip()
                         name_price = parts[1].strip()
-                        
-                        # Extrair nome e preço
                         if '(' in name_price and ')' in name_price:
                             name = name_price.split('(')[0].strip()
                             price_str = name_price.split('(')[1].split(')')[0].replace('$', '').replace(',', '')
                             try:
                                 price = float(price_str)
-                                
-                                # Salvar no banco
                                 c.execute('''INSERT INTO moedas (symbol, name, price, date) 
-                                           VALUES (?, ?, ?, ?)''', 
-                                           (symbol, name, price, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                                           VALUES (?, ?, ?, ?)''',
+                                          (symbol, name, price, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
                                 saved_count += 1
                                 print(f"Salvou: {symbol} - {name} (${price})")
                             except ValueError as ve:
                                 print(f"Erro ao converter preço '{price_str}' para {symbol}: {ve}")
                                 continue
-            
             conn.commit()
             conn.close()
             print(f"Total de moedas salvas: {saved_count}")
             return f"Salvas {saved_count} moedas no banco de dados."
-            
         except Exception as e:
             print(f"Erro ao salvar moedas: {e}")
             return f"Erro ao salvar moedas: {e}"
@@ -131,23 +123,23 @@ class SQLiteTool(BaseTool):
         saved_count = 0
         conn = sqlite3.connect(self._db_path)
         c = conn.cursor()
-        
+
         for coin in data_json:
             try:
                 symbol = coin.get('symbol', '').upper()
                 name = coin.get('name', '')
                 price = coin.get('current_price', 0.0)
-                
+
                 if symbol and name:
                     c.execute('''INSERT INTO moedas (symbol, name, price, date) 
-                               VALUES (?, ?, ?, ?)''', 
-                               (symbol, name, price, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                               VALUES (?, ?, ?, ?)''',
+                              (symbol, name, price, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
                     saved_count += 1
                     print(f"Salvou JSON: {symbol} - {name} (${price})")
             except Exception as e:
                 print(f"Erro ao salvar moeda JSON {coin}: {e}")
                 continue
-        
+
         conn.commit()
         conn.close()
         return saved_count
@@ -156,39 +148,39 @@ class SQLiteTool(BaseTool):
         try:
             if not data_str:
                 return "Nenhum dado fornecido para salvar sentimento"
-                
+
             print(f"Processando dados de sentimento: {data_str[:500]}...")
-            
+
             # Parsear dados de sentimento (formato: "Notícias recentes sobre BTC: - título1 - título2")
             lines = data_str.strip().split('\n')
             symbol = "UNKNOWN"
             news_count = 0
-            
+
             # Extrair símbolo da primeira linha
             if lines and 'sobre' in lines[0]:
                 symbol_part = lines[0].split('sobre')
                 if len(symbol_part) > 1:
                     symbol = symbol_part[1].split(':')[0].strip()
-            
+
             # Contar notícias
             news_count = len([line for line in lines if line.strip().startswith('-')])
-            
+
             # Calcular score simples baseado na quantidade de notícias
             score = min(news_count * 0.1, 1.0)  # Score de 0 a 1 baseado na quantidade de notícias
             sentiment = "positivo" if score > 0.5 else "neutro" if score > 0.2 else "negativo"
-            
+
             print(f"Salvando sentimento para {symbol}: {sentiment} (score: {score:.2f}, {news_count} notícias)")
-            
+
             conn = sqlite3.connect(self._db_path)
             c = conn.cursor()
             c.execute('''INSERT INTO sentimento (symbol, sentiment, score, news_count, date) 
-                       VALUES (?, ?, ?, ?, ?)''', 
-                       (symbol, sentiment, score, news_count, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                       VALUES (?, ?, ?, ?, ?)''',
+                      (symbol, sentiment, score, news_count, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
             conn.commit()
             conn.close()
-            
+
             return f"Salvo sentimento para {symbol}: {sentiment} (score: {score:.2f}, {news_count} notícias)"
-            
+
         except Exception as e:
             print(f"Erro ao salvar sentimento: {e}")
             return f"Erro ao salvar sentimento: {e}"
@@ -217,7 +209,8 @@ class SQLiteTool(BaseTool):
             c.execute("SELECT symbol, name, price, date FROM moedas ORDER BY date DESC LIMIT 50")
             result = c.fetchall()
             conn.close()
-            return f"Moedas encontradas: {len(result)}\n" + "\n".join([f"{r[0]} - {r[1]} (${r[2]}) - {r[3]}" for r in result])
+            return f"Moedas encontradas: {len(result)}\n" + "\n".join(
+                [f"{r[0]} - {r[1]} (${r[2]}) - {r[3]}" for r in result])
         except Exception as e:
             return f"Erro ao buscar moedas: {e}"
 
@@ -228,6 +221,7 @@ class SQLiteTool(BaseTool):
             c.execute("SELECT symbol, sentiment, score, news_count, date FROM sentimento ORDER BY date DESC LIMIT 50")
             result = c.fetchall()
             conn.close()
-            return f"Sentimentos encontrados: {len(result)}\n" + "\n".join([f"{r[0]} - {r[1]} (score: {r[2]:.2f}, {r[3]} notícias) - {r[4]}" for r in result])
+            return f"Sentimentos encontrados: {len(result)}\n" + "\n".join(
+                [f"{r[0]} - {r[1]} (score: {r[2]:.2f}, {r[3]} notícias) - {r[4]}" for r in result])
         except Exception as e:
             return f"Erro ao buscar sentimentos: {e}"

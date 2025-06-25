@@ -1,0 +1,24 @@
+analyst:
+  description: "Obtenha os dados atualizados de mercado das 5 principais criptomoedas por volume. Apresente preço, variação 24h e market cap."
+  expected_output: "Uma tabela com as moedas, seus preços atuais, variação em 24h e market cap."
+  agent: analyst
+
+news:
+  description: "Busque as 5 principais notícias das últimas 48 horas que impactaram o mercado de criptomoedas."
+  expected_output: "Lista com 5 notícias e um breve resumo de cada uma."
+  agent: news
+
+sentiment:
+  description: "Analise o sentimento geral do mercado cripto com base nas notícias e postagens recentes no Twitter e Reddit."
+  expected_output: "Classificação geral de sentimento (positivo, neutro, negativo) com justificativa."
+  agent: sentiment
+
+technical:
+  description: "Aplique análise técnica (RSI, MACD, Bollinger Bands) para identificar se há sinais de compra/venda para Bitcoin e Ethereum."
+  expected_output: "Resumo técnico com os sinais identificados e qual interpretação predominante (compra, venda, neutro)."
+  agent: technical
+
+report:
+  description: "Com base nas análises anteriores, gere um relatório executivo com visão geral do mercado, tendências, oportunidades e riscos."
+  expected_output: "Texto coeso com seções para dados de mercado, notícias, sentimento, análise técnica e conclusão."
+  agent: reporter

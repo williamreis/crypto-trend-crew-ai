@@ -1,12 +1,22 @@
-from crewai.tools import BaseTool
 import requests
-from bs4 import BeautifulSoup
 import urllib.parse
+from crewai.tools import BaseTool
+from bs4 import BeautifulSoup
+from typing import Type
+from pydantic import BaseModel, Field
+
+
+class NewsToolInput(BaseModel):
+    """
+    Argumentos de entrada para a ferramenta CoinGecko
+    """
+    query: str = Field(description="Query para buscar notícias sobre criptomoedas. Exemplo: 'Bitcoin', 'Ethereum', etc.")
 
 
 class NewsTool(BaseTool):
     name: str = "News Tool"
     description: str = "Busca notícias relevantes sobre criptomoedas usando Google News (gratuito, sem API token)."
+    args_schema: Type[BaseTool] = NewsToolInput
 
     def _run(self, query: str) -> str:
         try:

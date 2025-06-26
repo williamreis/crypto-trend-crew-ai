@@ -1,14 +1,25 @@
-from crewai.tools import BaseTool
 import sqlite3
 import os
-from datetime import datetime
 import json
 import ast
+from crewai.tools import BaseTool
+from datetime import datetime
+from typing import Type
+from pydantic import BaseModel, Field
+
+
+class SQLiteToolInput(BaseModel):
+    """
+    Argumentos de entrada para a ferramenta CoinGecko
+    """
+    action: str = Field(description="Ação a ser executada no banco SQLite. Use 'save_moedas' para salvar dados de moedas, 'save_sentimento' para sentimentos, ou 'query' para consultas SQL.")
+    data: str = Field(default=None, description="Dados a serem processados pela ação. Pode ser uma string JSON ou texto formatado.")
 
 
 class SQLiteTool(BaseTool):
     name: str = "SQLite Tool"
     description: str = "Persiste e consulta dados em um banco SQLite local. Use 'save_moedas' para salvar dados de moedas, 'save_sentimento' para sentimentos, ou 'query' para consultas SQL."
+    args_schema: Type[BaseTool] = SQLiteToolInput
 
     def __init__(self, db_path=None):
         super().__init__()
@@ -123,13 +134,13 @@ class SQLiteTool(BaseTool):
         saved_count = 0
         conn = sqlite3.connect(self._db_path)
         c = conn.cursor()
-        
+
         for coin in data_json:
             try:
                 # Mapear campos dos dados recebidos para as colunas da tabela
                 symbol = coin.get('simbolo', coin.get('symbol', '')).upper()
                 name = coin.get('nome', coin.get('name', ''))
-                
+
                 # Tentar extrair preço de diferentes campos
                 price = 0.0
                 if 'market_cap' in coin and coin['market_cap'] != 'N/A':
@@ -140,7 +151,7 @@ class SQLiteTool(BaseTool):
                         price = 0.0
                 elif 'current_price' in coin:
                     price = float(coin['current_price'])
-                
+
                 # Extrair variação percentual se disponível
                 change_24h = 0.0
                 if 'variacao_percentual_24h' in coin:
@@ -151,7 +162,7 @@ class SQLiteTool(BaseTool):
                         change_24h = 0.0
                 elif 'price_change_percentage_24h' in coin:
                     change_24h = float(coin['price_change_percentage_24h'])
-                
+
                 # Extrair volume se disponível
                 volume = 0.0
                 if 'volume_negociacao' in coin and coin['volume_negociacao'] != 'N/A':
@@ -162,17 +173,17 @@ class SQLiteTool(BaseTool):
                         volume = 0.0
                 elif 'total_volume' in coin:
                     volume = float(coin['total_volume'])
-                
+
                 if symbol and name:
                     c.execute('''INSERT INTO moedas (symbol, name, price, volume, change_24h, date) 
-                               VALUES (?, ?, ?, ?, ?, ?)''', 
-                               (symbol, name, price, volume, change_24h, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                               VALUES (?, ?, ?, ?, ?, ?)''',
+                              (symbol, name, price, volume, change_24h, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
                     saved_count += 1
                     print(f"Salvou JSON: {symbol} - {name} (${price}, {change_24h}%)")
             except Exception as e:
                 print(f"Erro ao salvar moeda JSON {coin}: {e}")
                 continue
-        
+
         conn.commit()
         conn.close()
         return saved_count
